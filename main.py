@@ -1,11 +1,68 @@
 # mem inst, wrt, add, add/val, math inst, wrt, add/val
 # [0b0000, 0b0, 0b00000, 0b00000000, 0b000, 0b0, 0b00000000]
 
+"""
+last = 0
+cur = 1
+x = 1
+dx = 1
+max = 12
+display x, cur
+
+new = cur + last
+last = cur
+cur = new
+newX = x + dx
+x = newX
+dif = cur - max
+display x, cur
+jump if dif <= 0
+hault
+
+WrtR 1 0  // last
+WrtR 2 1  // cur
+WrtR 3 1  // x
+
+LdAB 3 2
+Disp
+
+LdAB 1 2
+Add 4  // new
+WrRR 1 2  // last = cur
+WrRR 2 4  // cur = new
+LodA 3
+WrtB 1
+Add 4  // newX = x + dx
+WrRR 3 4  // x = newX
+LodAB 3 2
+Disp
+LodA 2
+WrtB 232
+Sub 4  // dif = cur - max
+JmIZ 5
+Halt
+"""
+
 asm = [
-    "WrtA 24",
-    "WrtB 9",
-    "Add",
-    "Outp",
+    "WrtR 1 0",
+    "WrtR 2 1",
+    "WrtR 3 1",
+    "LdAB 3 2",
+    "Disp",
+    "LdAB 1 2",
+    "Add 4",
+    "WrRR 1 2",
+    "WrRR 2 4",
+    "LodA 3",
+    "WrtB 1",
+    "Add 4",
+    "WrRR 3 4",
+    "LodAB 3 2",
+    "Disp",
+    "LodA 2",
+    "WrtB 232",
+    "Sub 4",
+    "JmIZ 5",
     "Halt"
 ]
 
@@ -74,7 +131,7 @@ for com in asm:
     
     instructions.append(instO)
 
-ram = ['0b0' for i in range(31)]
+ram = ['0b0' for i in range(32)]  # just pretened you can't use the 0th memory slot
 dsp = [['0b0' for x in range(15)] for y in range(15)]
 regA = '0b0'
 regB = '0b0'
@@ -124,9 +181,9 @@ while running:
         ram[int(address1)] = ram[int(addValue)]
     elif memInst == 0b1011:  # reg C -> dsp[reg A, reg B]
         if int(regC, 2) > 0:
-            dsp[int(regA, 2)][int(regB, 2)] = 0b1
+            dsp[int(regA, 2)][int(regB, 2)] = '0b1'
         else:
-            dsp[int(regA, 2)][int(regB, 2)] = 0b0
+            dsp[int(regA, 2)][int(regB, 2)] = '0b0'
     elif memInst == 0b0111:  # reg C -> output bus
         outBus = regC
     elif memInst == 0b1111:  # input bus -> reg C

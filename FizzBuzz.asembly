@@ -1,0 +1,68 @@
+WrtR 1 1
+WrtR 3 0
+WrtR 2 0
+LodA 2
+WrtB 3
+Add
+RedC 2
+LdAB 1 2
+Sub
+JmIZ 12
+Jump 4
+LodA 2
+WrtB 1
+Sub
+RedC 4
+LdAB 1 4
+Sub
+JmIZ 23
+LodA 3
+WrtB 1
+Add
+RedC 3
+WrtR 2 0
+LodA 2
+WrtB 5
+Add
+RedC 2
+LdAB 1 2
+Sub
+JmIZ 32
+Jump 24
+LodA 2
+WrtB 1
+Sub
+RedC 4
+LdAB 1 4
+Sub
+JmIZ 43
+LodA 3
+WrtB 2
+Add
+RedC 3
+WrRR 5 3
+LodA 3
+WrtB 100
+Add
+RedC 3
+WrtA 3
+LodB 5
+Sub 4
+LodA 4
+WrtB 2
+Sub
+JmIZ 56
+WrRR 3 1
+LodA 3
+WrtB 0
+Add
+Outp
+LodA 1
+WrtB 1
+Add
+RedC 1
+LodA 1
+WrtB 100
+Sub
+JmIZ 2
+Halt

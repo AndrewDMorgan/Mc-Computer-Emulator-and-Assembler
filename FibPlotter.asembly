@@ -1,0 +1,25 @@
+WrtR 1 0
+WrtR 2 1
+WrtR 3 1
+WrtA 0
+Not
+LdAB 3 2
+Disp
+LdAB 1 2
+Add 4
+Outp
+WrRR 1 2
+WrRR 2 4
+LodA 3
+WrtB 1
+Add 4
+WrRR 3 4
+WrtA 0
+Not
+LdAB 3 2
+Disp
+LodA 2
+WrtB 232
+Sub 4
+JmIZ 8
+Halt

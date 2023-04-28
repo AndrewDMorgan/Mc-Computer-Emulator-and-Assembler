@@ -1,0 +1,26 @@
+WrtR 5 0
+WrtR 6 1
+WrtR 1 6
+LodA 1
+WrtB 1
+Sub
+LdRA
+WrtB 0
+Add 2
+LodA 1
+Add
+LdRA
+Add 3
+LdAB 2 3
+Add 4
+Outp
+LodA 1
+WrtB 1
+Add
+RedC 1
+WtCR 4
+LodA 4
+WrtB 232
+Sub
+JmIZ 4
+Halt

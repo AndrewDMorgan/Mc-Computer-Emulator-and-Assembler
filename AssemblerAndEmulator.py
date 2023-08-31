@@ -3,20 +3,28 @@
 program = [
     ".Main",
     "   LodI 212 <1>  ; loading 212 into ram at 1",
-    "Jump Main"
+    "   Jump End",
+    ".End",
+    "   END"
 ]
 
 # stuff for the processed program
 jumpPoints = {}
 code = []
 
-# processing the program into a computer readable form
+# getting the jump points
 lineNumber = 0
 for line in program:
     if line:
         if line[0] == ".":
             jumpPoints[line[1:]] = lineNumber
-        else:
+        else: lineNumber += 1
+
+# processing the program into a computer readable form
+lineNumber = 0
+for line in program:
+    if line:
+        if line[0] != ".":
             lineNumber += 1
             instruction = line.split(";")[0].strip()
             headerCorrected = ""
@@ -37,6 +45,7 @@ wrtieReg = 0
 
 # the ram
 ram = [0 for i in range(32)]
+letterDisplay = [0 for i in range(16)]
 
 # the stack
 stack = []
@@ -44,5 +53,20 @@ stack = []
 # screen stuff
 screenBuffer = [[0 for i in range(31)] for i in range(31)]
 screen = [[0 for i in range(31)] for i in range(31)]
-
 screenRefresh = True
+
+# running the program
+lineNumber = 0
+running = True
+while running:
+    # getting the next line
+    lineNumber += 1
+    line = code[lineNumber - 1]
+    print(line)
+    
+    # processing the line and running it
+    pass
+
+    # ending the program
+    if line == "END": running = False
+

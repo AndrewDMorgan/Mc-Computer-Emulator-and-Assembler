@@ -68,12 +68,9 @@ while running:
     # processing the line and running it
     if insts[0] == "LodI":
         pass
-    if insts[0] == "LodA":
-        pass
-    if insts[0] == "LodB":
-        pass
-    if insts[0] == "LodW":
-        pass
+    if insts[0] == "LodA": readRegA = int(insts[1])
+    if insts[0] == "LodB": readRegB = int(insts[1])
+    if insts[0] == "LodW": writeReg = int(insts[1])
     if insts[0] == "Add":
         pass
     if insts[0] == "Sub":
@@ -86,8 +83,7 @@ while running:
         pass
     if insts[0] == "WrtB":
         pass
-    if insts[0] == "Jump":
-        pass
+    if insts[0] == "Jump": lineNumber = int(insts[1])
     if insts[0] == "JmpZ":
         pass
     if insts[0] == "JmpE":
@@ -98,8 +94,7 @@ while running:
         pass
     if insts[0] == "Wrte":
         pass
-    if insts[0] == "Outp":
-        pass
+    if insts[0] == "Outp": pass  # no longer an instruction on the actual computer
     if insts[0] == "SftR":
         pass
     if insts[0] == "Pop":
@@ -115,12 +110,10 @@ while running:
     if insts[0] == "Refr": screen = screenBuffer
     if insts[0] == "Plot":
         pass
-    if insts[0] == "Cler":
-        pass
+    if insts[0] == "Cler": screenBuffer = [[0 for i in range(31)] for i in range(31)]
     if insts[0] == "PshT":
         pass
-    if insts[0] == "ClrT":
-        pass
+    if insts[0] == "ClrT": letterDisplay = [0 for i in range(16)]
     
     if screenRefresh: screen = screenBuffer
 

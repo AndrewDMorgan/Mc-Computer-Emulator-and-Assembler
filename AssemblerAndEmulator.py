@@ -62,10 +62,67 @@ while running:
     # getting the next line
     lineNumber += 1
     line = code[lineNumber - 1]
-    print(line)
     
+    insts = line.split(" ")
+
     # processing the line and running it
-    pass
+    if insts[0] == "LodI":
+        pass
+    if insts[0] == "LodA":
+        pass
+    if insts[0] == "LodB":
+        pass
+    if insts[0] == "LodW":
+        pass
+    if insts[0] == "Add":
+        pass
+    if insts[0] == "Sub":
+        pass
+    if insts[0] == "SubL":
+        pass
+    if insts[0] == "WrtW":
+        pass
+    if insts[0] == "WrtA":
+        pass
+    if insts[0] == "WrtB":
+        pass
+    if insts[0] == "Jump":
+        pass
+    if insts[0] == "JmpZ":
+        pass
+    if insts[0] == "JmpE":
+        pass
+    if insts[0] == "JmpG":
+        pass
+    if insts[0] == "JmpL":
+        pass
+    if insts[0] == "Wrte":
+        pass
+    if insts[0] == "Outp":
+        pass
+    if insts[0] == "SftR":
+        pass
+    if insts[0] == "Pop":
+        pass
+    if insts[0] == "Push":
+        pass
+    if insts[0] == "Not":
+        pass
+    if insts[0] == "NotB":
+        pass
+    if insts[0] == "RefT": screenRefresh = True
+    if insts[0] == "RefF": screenRefresh = False
+    if insts[0] == "Refr": screen = screenBuffer
+    if insts[0] == "Plot":
+        pass
+    if insts[0] == "Cler":
+        pass
+    if insts[0] == "PshT":
+        pass
+    if insts[0] == "ClrT":
+        pass
+    
+    if screenRefresh: screen = screenBuffer
 
     # ending the program
     if line == "END": running = False

@@ -1,232 +1,187 @@
-# mem inst, wrt, add, add/val, math inst, wrt, add/val
-# [0b0000, 0b0, 0b00000, 0b00000000, 0b000, 0b0, 0b00000000]
+from pynput import keyboard
+import time, random
 
-"""
-last = 0
-cur = 1
-x = 1
-dx = 1
-max = 12
-display x, cur
+# gets the pressed key
+def on_press(key):
+    global inBus
+    try:
+        inBus = ord(key.char)
+    except AttributeError:
+        pass
 
-new = cur + last
-last = cur
-cur = new
-newX = x + dx
-x = newX
-dif = cur - max
-display x, cur
-jump if dif <= 0
-hault
 
-WrtR 1 0  // last
-WrtR 2 1  // cur
-WrtR 3 1  // x
+# goes when a key is released
+def on_release(key):
+    global inBus
+    inBus = 0
+    if not running:
+        # Stop listener
+        return False
 
-LdAB 3 2
-Disp
 
-LdAB 1 2
-Add 4  // new
-WrRR 1 2  // last = cur
-WrRR 2 4  // cur = new
-LodA 3
-WrtB 1
-Add 4  // newX = x + dx
-WrRR 3 4  // x = newX
-LodAB 3 2
-Disp
-LodA 2
-WrtB 232
-Sub 4  // dif = cur - max
-JmIZ 5
-Halt
-"""
+# gets and returns the correct address
+def Read(add: str, regValue: int=0) -> int:
+    if add[0] == "<":
+        number = int(add[1:-1])
+        if number == 0: return ram[regValue]
+        return ram[number]
+    elif add == "ACC": return accumulator
+    return int(add)
 
-asm = [
-    "WrtR 1 0",
-    "WrtR 2 1",
-    "WrtR 3 1",
-    "LdAB 3 2",
-    "Disp",
-    "LdAB 1 2",
-    "Add 4",
-    "WrRR 1 2",
-    "WrRR 2 4",
-    "LodA 3",
-    "WrtB 1",
-    "Add 4",
-    "WrRR 3 4",
-    "LodAB 3 2",
-    "Disp",
-    "LodA 2",
-    "WrtB 232",
-    "Sub 4",
-    "JmIZ 5",
-    "Halt"
-]
 
-instructions = []
-for com in asm:
-    split = com.split(" ")
-    inst = split[0]
-    instO = [0b0, 0b0, 0b0, 0b0, 0b0, 0b0, 0b0]
-    
-    if inst == "LodA":
-        instO = [0b1000, 0b0, int(split[1]), 0b0, 0b0, 0b0, 0b0]
-    elif inst == "LodB":
-        instO = [0b0100, 0b0, int(split[1]), 0b0, 0b0, 0b0, 0b0]
-    elif inst == "LdAB":
-        instO = [0b1100, 0b0, int(split[1]), int(split[2]), 0b0, 0b0, 0b0]
-    elif inst == "RedC":
-        instO = [0b0010, 0b1, int(split[1]), 0b0, 0b0, 0b0, 0b0]
-    elif inst == "WtRC":
-        instO = [0b1010, 0b0, 0b0, int(split[1]), 0b0, 0b0, 0b0]
-    elif inst == "WrtR":
-        instO = [0b0110, 0b1, int(split[1]), int(split[2]), 0b0, 0b0, 0b0]
-    elif inst == "WrtA":
-        instO = [0b1110, 0b0, 0b0, int(split[1]), 0b0, 0b0, 0b0]
-    elif inst == "WrtB":
-        instO = [0b0001, 0b0, 0b0, int(split[1]), 0b0, 0b0, 0b0]
-    elif inst == "LdRA":
-        instO = [0b1001, 0b0, 0b0, 0b0, 0b0, 0b0, 0b0]
-    elif inst == "LDRB":
-        instO = [0b0101, 0b0, 0b0, 0b0, 0b0, 0b0, 0b0]
-    elif inst == "WtCR":
-        instO = [0b1101, 0b0, int(split[1]), 0b0, 0b0, 0b0, 0b0]
-    elif inst == "WrRR":
-        instO = [0b0011, 0b1, int(split[1]), int(split[2]), 0b0, 0b0, 0b0]
-    elif inst == "Disp":
-        instO = [0b1011, 0b0, 0b0, 0b0, 0b0, 0b0, 0b0]
-    elif inst == "Outp":
-        instO = [0b0111, 0b0, 0b0, 0b0, 0b0, 0b0, 0b0]
-    elif inst == "Inpt":
-        instO = [0b1111, 0b0, 0b0, 0b0, 0b0, 0b0, 0b0]
-    elif inst == "Add":
-        if len(split) == 1:
-            instO = [0b0, 0b0, 0b0, 0b0, 0b100, 0b0, 0b0]
-        else:
-            instO = [0b0, 0b0, 0b0, 0b0, 0b100, 0b1, int(split[1])]
-    elif inst == "Not":
-        if len(split) == 1:
-            instO = [0b0, 0b0, 0b0, 0b0, 0b010, 0b0, 0b0]
-        else:
-            instO = [0b0, 0b0, 0b0, 0b0, 0b010, 0b1, int(split[1])]
-    elif inst == "Sub":
-        if len(split) == 1:
-            instO = [0b0, 0b0, 0b0, 0b0, 0b110, 0b0, 0b0]
-        else:
-            instO = [0b0, 0b0, 0b0, 0b0, 0b110, 0b1, int(split[1])]
-    elif inst == "SftL":
-        if len(split) == 1:
-            instO = [0b0, 0b0, 0b0, 0b0, 0b001, 0b0, 0b0]
-        else:
-            instO = [0b0, 0b0, 0b0, 0b0, 0b001, 0b1, int(split[1])]
-    elif inst == "Jump":
-        instO = [0b0, 0b0, 0b0, 0b0, 0b101, 0b0, int(split[1])]
-    elif inst == "JmIZ":
-        instO = [0b0, 0b0, 0b0, 0b0, 0b011, 0b0, int(split[1])]
-    elif inst == "Halt":
-        instO = [0b0, 0b0, 0b0, 0b0, 0b111, 0b0, 0b0]
-    
-    instructions.append(instO)
+# gets and returns the correct address
+def Write(add: str, writeVal: int, regValue: int=0) -> None:
+    global ram, accumulator
+    writeVal = max(writeVal, 0)
+    if add[0] == "<":
+        number = int(add[1:-1])
+        if number == 0: ram[regValue] = writeVal
+        else: ram[number] = writeVal
+    elif add == "ACC": accumulator = writeVal
+    else: ram[int(add)] = writeVal
 
-ram = ['0b0' for i in range(32)]  # just pretened you can't use the 0th memory slot
-dsp = [['0b0' for x in range(15)] for y in range(15)]
-regA = '0b0'
-regB = '0b0'
-regC = '0b0'
-outBus = '0b0'
-inBus = '0b0'
 
-line = 0
+# the program
+program = open(input(">> ")).read().split("\n")
+
+# stuff for the processed program
+jumpPoints = {}
+code = []
+
+# getting the jump points
+lineNumber = 0
+for l in program:
+    line = l.split(";")[0].strip()
+    if line:
+        if line[0] == ".":
+            jumpPoints[line[1:-1]] = lineNumber
+        else: lineNumber += 1
+
+# processing the program into a computer readable form
+lineNumber = 0
+for l in program:
+    line = l.split(";")[0].strip()
+    if line:
+        if line[0] != ".":
+            lineNumber += 1
+            instruction = line.split(";")[0].strip()
+            headerCorrected = ""
+            for word in instruction.split(" "):
+                if word in jumpPoints:
+                    headerCorrected += str(jumpPoints[word])
+                else:
+                    headerCorrected += word
+                headerCorrected += " "
+            code.append(headerCorrected[:-1])
+
+# printing the code
+for line in code:
+    print(line)
+
+
+# getting key inputs
 running = True
+listener = keyboard.Listener(
+    on_press=on_press,
+    on_release=on_release)
+listener.start()
 
+# the registers
+readRegA = 0
+readRegB = 0
+writeReg = 0
+
+inBus = 0
+
+# memory
+ram = [0 for i in range(32)]
+letterDisplay = []
+accumulator = 0
+stack = []
+
+# screen stuff
+screenBuffer = [[0 for i in range(31)] for i in range(31)]
+screen = [[0 for i in range(31)] for i in range(31)]
+screenRefresh = True
+
+# running the program
+lineNumber = 0
 while running:
-    instruction = instructions[line]
-    memInst = instruction[0]
-    writeMem = instruction[1]
-    address1 = instruction[2]
-    addValue = instruction[3]
+    # getting the next line
+    lineNumber += 1
+    line = code[lineNumber - 1]
+    ram[1] = lineNumber - 1
+    #time.sleep(0.25)
+    #print(f"{lineNumber}: {line}")
+    #print(accumulator)
     
-    opInst = instruction[4]
-    writeOp = instruction[5]
-    addValueOp = instruction[6]
-    
-    # memory stuffs
-    if memInst == 0b1000:  # ram -> reg A
-        regA = ram[int(address1)]
-    elif memInst == 0b0100:  # ram -> reg B
-        regB = ram[int(address1)]
-    elif memInst == 0b1100:  # ram -> reg A and regB
-        regA = ram[int(address1)]
-        regB = ram[int(addValue)]
-    elif memInst == 0b0010:  # reg C -> ram
-        ram[int(address1)] = regC
-    elif memInst == 0b1010:  # value -> ram[reg C]
-        ram[int(regC, 2)] = bin(addValue)
-    elif memInst == 0b0110:  # value -> ram
-        ram[int(address1)] = bin(addValue)
-    elif memInst == 0b1110:  # value -> reg A
-        regA = bin(addValue)
-    elif memInst == 0b0001:  # value -> reg B
-        regB = bin(addValue)
-    elif memInst == 0b1001:  # ram[reg C] -> regA
-        regA = ram[int(regC, 2)]
-    elif memInst == 0b0101:  # ram[reg C] -> regB
-        regB = ram[int(regC, 2)]
-    elif memInst == 0b1101:  # ram -> ram[reg C]
-        ram[int(regC, 2)] = ram[int(address1)]
-    elif memInst == 0b0011:  # ram -> ram
-        ram[int(address1)] = ram[int(addValue)]
-    elif memInst == 0b1011:  # reg C -> dsp[reg A, reg B]
-        if int(regC, 2) > 0:
-            dsp[int(regA, 2)][int(regB, 2)] = '0b1'
-        else:
-            dsp[int(regA, 2)][int(regB, 2)] = '0b0'
-    elif memInst == 0b0111:  # reg C -> output bus
-        outBus = regC
-    elif memInst == 0b1111:  # input bus -> reg C
-        regC = inBus
-    
-    # math/operations
-    if opInst == 0b111:  # hault
-        running = False
-    elif opInst == 0b011:  # conditional jump if reg C == 0
-        if regC == 0:
-            line = int(str(addValueOp)[:-1], 2) - 1
-    elif opInst == 0b101:  # jump
-        line = int(str(addValueOp)[:-1], 2) - 1
-    elif opInst == 0b001:  # bit shift left
-        regC = bin(int(regA, 2) << 1)
-        if writeOp:
-            ram[int(addValueOp)] = regC
-    elif opInst == 0b110:  # subtraction
-        regC = bin(int(regA, 2) - int(regB, 2))
-        if writeOp:
-            ram[int(addValueOp)] = regC
-    elif opInst == 0b010:  # not
-        regC = bin(0b11111111 - int(regA, 2))
-        if writeOp:
-            ram[int(addValueOp)] = regC
-    elif opInst == 0b100:  # addition
-        regC = bin(int(regA, 2) + int(regB, 2))
-        if writeOp:
-            ram[int(addValueOp)] = regC
-    
-    # clamping the output of regC
-    regC = bin(max(min(int(regC, 2), 255), 0))
-    
-    line += 1
+    insts = line.split(" ")
 
-print(int(outBus, 2))
+    # processing the line and running it
+    if insts[0] == "LodI": Write(insts[2], int(insts[1]), writeReg)
+    if insts[0] == "LodA": readRegA = int(insts[1])
+    if insts[0] == "LodB": readRegB = int(insts[1])
+    if insts[0] == "LodW": writeReg = int(insts[1])
+    if insts[0] == "Add" : Write(insts[3], Read(insts[1], readRegA) + Read(insts[2], readRegB), writeReg)
+    if insts[0] == "Sub" : Write(insts[3], Read(insts[1], readRegA) - Read(insts[2], readRegB), writeReg)
+    if insts[0] == "SubL": Write(insts[3], Read(insts[2], readRegB) - Read(insts[1], readRegA), writeReg)
+    if insts[0] == "WrtW": writeReg = Read(insts[1], readRegB)
+    if insts[0] == "WrtA": readRegA = Read(insts[1], readRegB)
+    if insts[0] == "WrtB": readRegB = Read(insts[1], readRegB)
+    if insts[0] == "Jump": lineNumber = Read(insts[1], readRegB)
+    if insts[0] == "JmpZ" and accumulator == 0: lineNumber = Read(insts[1], readRegB)
+    if insts[0] == "JmpE" and accumulator == Read(insts[1], readRegB): lineNumber = int(insts[2])
+    if insts[0] == "JmpG" and accumulator >  Read(insts[1], readRegB): lineNumber = int(insts[2])
+    if insts[0] == "JmpL" and accumulator <  Read(insts[1], readRegB): lineNumber = int(insts[2])
+    if insts[0] == "Wrte": Write(insts[2], Read(insts[1], readRegB), writeReg)
+    if insts[0] == "Outp": print(Read(insts[1], readRegB))  # no longer an instruction on the actual computer (but will still be on this emulated version)
+    if insts[0] == "SftR": Write(insts[2], Read(insts[1], readRegA) >> 1, writeReg)
+    if insts[0] == "Pop" :  # deleting empty values will cause an error here but not on the actual computer
+        Write(insts[1], stack[0], writeReg)
+        del stack[0]
+    if insts[0] == "Push": stack.insert(0, Read(insts[1], readRegB))  # the actual computer has a limit of 16 values before it will start deleting older ones
+    if insts[0] == "Not" : Write(insts[2], ~Read(insts[1], readRegA), writeReg)
+    if insts[0] == "NotB": Write(insts[2], ~Read(insts[1], readRegB), writeReg)
+    if insts[0] == "RefT": screenRefresh = True
+    if insts[0] == "RefF": screenRefresh = False
+    if insts[0] == "Refr":
+        screen = screenBuffer
+        time.sleep(0.5)
+    if insts[0] == "Plot":
+        try:  # works the same way on the mc computer
+            screenBuffer[Read(insts[2], readRegB)-1][Read(insts[1], readRegA)-1] = accumulator  # [y][x] instruction is x, y
+        except IndexError:
+            pass
+    if insts[0] == "Cler": screenBuffer = [[0 for i in range(31)] for i in range(31)]
+    if insts[0] == "PshT": letterDisplay.insert(0, Read(insts[1], readRegB))
+    if insts[0] == "ClrT": letterDisplay = []
 
-for y in range(15):
-    for x in range(15):
-        value = int(dsp[y][x], 2)
-        if value > 0:
-            print("##", end='')
-        else:
-            print("  ", end='')
-    print("")
+    # not real instructions on the computer
+    if insts[0] == "Inpt": Write(insts[1], inBus, writeReg)
+    if insts[0] == "Rand": Write(insts[1], random.randint(0, 255), writeReg)
+    
+    # refreshing the screen
+    if screenRefresh: screen = screenBuffer
+    
+    # rendering the screen, and text
+    #"""
+    if insts[0] == "Refr":
+        abc = list(" abcdefghijklmnopqrstuvwxyz")
+        print("".join([abc[char] for char in letterDisplay[::-1]]))
+        print("++" + "--"*31 + "++")
+        for row in screenBuffer[::-1]:
+            print("||", end='')
+            for value in row:
+                char = "  "
+                if value: char="##"
+                print(char, end='')
+            print("||")
+        print("++" + "--"*31 + "++")
+    #"""
 
+    # ending the program
+    if line == "END": running = False
+
+    #time.sleep(4)
+
+print(ram)
